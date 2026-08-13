@@ -174,8 +174,8 @@ class MLService:
     def analyze_sentiment(text: str) -> str:
         text_lower = text.lower()
         # Word lists
-        positive_words = ["love", "great", "excellent", "good", "happy", "thanks", "thank you", "perfect", "success", "appreciate", "helpful", "amazing"]
-        negative_words = ["error", "fail", "failed", "bad", "wrong", "broken", "issue", "problem", "restrict", "unauthorized", "billing issue", "suspend", "cancel", "urgent"]
+        positive_words = ["love", "great", "excellent", "good", "happy", "thanks", "thank you", "perfect", "success", "appreciate", "helpful", "amazing", "skills", "learn", "grow", "certificate", "course", "opportunity", "invite", "enroll", "offer", "reward", "welcome"]
+        negative_words = ["error", "fail", "failed", "bad", "wrong", "broken", "unauthorized", "suspend", "threat", "phishing", "malware", "virus", "compromised", "fraud", "scam", "breach"]
         
         pos_hits = sum(1 for w in positive_words if w in text_lower)
         neg_hits = sum(1 for w in negative_words if w in text_lower)

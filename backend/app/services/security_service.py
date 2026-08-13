@@ -28,17 +28,23 @@ class SecurityEngine:
 
     @staticmethod
     def analyze_domain(sender: str) -> bool:
-        """Check for domain impersonation using simple Levenshtein distance."""
+        """Check for domain impersonation using typosquatting and Levenshtein distance."""
         match = re.search(r"@([^>]+)", sender)
         if not match:
             return False
-        domain = match.group(1).lower().split('.')[0]
+        domain_full = match.group(1).lower()
+        domain = domain_full.split('.')[0]
+        
+        # Leetspeak normalization (g00gle -> google)
+        norm_domain = domain.replace('0', 'o').replace('1', 'l').replace('3', 'e').replace('4', 'a').replace('5', 's')
         
         for brand in SecurityEngine.KNOWN_BRANDS:
-            if domain == brand:
-                return False # Exact match is fine (though we should check auth)
-            if difflib.SequenceMatcher(None, domain, brand).ratio() > 0.8:
-                return True # High similarity but not exact match -> impersonation!
+            if domain == brand or norm_domain == brand:
+                return False # Exact match
+            if brand in norm_domain or brand in domain:
+                return True # Typosquatting (e.g. g00gle-account.xyz or google-login.com)
+            if difflib.SequenceMatcher(None, domain, brand).ratio() > 0.7 or difflib.SequenceMatcher(None, norm_domain, brand).ratio() > 0.7:
+                return True # Impersonation!
         return False
 
     @staticmethod
@@ -62,17 +68,18 @@ class SecurityEngine:
     @staticmethod
     def get_sender_trust(db: Session, user_id: int, sender: str) -> float:
         """Calculate a trust score based on previous interactions with this sender."""
-        # Clean sender email
-        match = re.search(r"<([^>]+)>", sender)
-        email_addr = match.group(1) if match else sender
-        
-        count = db.query(models.Email).filter(
-            models.Email.user_id == user_id,
-            models.Email.sender.ilike(f"%{email_addr}%")
-        ).count()
-        
-        # Simple trust scale: 0 if unknown, up to 1.0 if seen >= 10 times
-        return min(1.0, count / 10.0)
+        try:
+            match = re.search(r"<([^>]+)>", sender)
+            email_addr = match.group(1) if match else sender
+            
+            count = db.query(models.Email).filter(
+                models.Email.user_id == user_id,
+                models.Email.sender.ilike(f"%{email_addr}%")
+            ).count()
+            
+            return min(1.0, count / 10.0)
+        except Exception:
+            return 0.5
 
     @staticmethod
     def compute_risk(nlp_phishing_score: float, nlp_spam_score: float, 

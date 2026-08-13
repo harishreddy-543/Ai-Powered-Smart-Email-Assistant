@@ -1,5 +1,12 @@
 # Environment and secrets
 /backend/.env
+.env
+serviceAccountkey*.json
+test.json
+test_latest.json
+
+# Databases
+*.db
 
 # Python artifacts
 __pycache__/
@@ -9,14 +16,12 @@ __pycache__/
 .Python
 venv/
 ENV/
-.env
 
 # Byte-compiled / optimized / DLL files
 *.so
 *.dylib
 
 # Distribution / packaging
-.Python
 build/
 develop-eggs/
 dist/

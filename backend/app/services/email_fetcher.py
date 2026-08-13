@@ -47,7 +47,7 @@ SIMULATED_TEMPLATES = {
     "spam": [
         {
             "sender": "marketing@super-deals-now.com",
-            "subject": "🔥 MEGA SALE - 90% OFF!!!",
+            "subject": "≡ƒöÑ MEGA SALE - 90% OFF!!!",
             "body": "Buy now and receive another product FREE!\n\nLimited offer!\nClick here now!\nhttp://super-deals-now.com/buy"
         }
     ],
@@ -79,7 +79,20 @@ def simulate_incoming_email(db: Session, user_id: int, sim_type: str = "random")
     if sim_type == "random" or sim_type not in SIMULATED_TEMPLATES:
         sim_type = random.choice(list(SIMULATED_TEMPLATES.keys()))
         
-    template = random.choice(SIMULATED_TEMPLATES[sim_type])
+    # Create a copy so we don't mutate the global template
+    template = dict(random.choice(SIMULATED_TEMPLATES[sim_type]))
+    
+    # Fetch user preferences and dynamically inject them into the simulation!
+    prefs = db.query(models.Preferences).filter(models.Preferences.user_id == user_id).first()
+    if prefs and sim_type in ["placement", "interview"]:
+        companies = [c.strip() for c in prefs.favorite_companies.split(',')] if prefs.favorite_companies else ["TechCorp"]
+        roles = [r.strip() for r in prefs.career_interests.split(',')] if prefs.career_interests else ["Software Engineer"]
+        company = random.choice(companies)
+        role = random.choice(roles)
+        
+        template["subject"] = template["subject"].replace("TCS", company).replace("Data Analyst", role)
+        template["body"] = template["body"].replace("TCS", company).replace("Data Analyst", role)
+    
     # Add a slight variation to sender/subject to make database entries unique
     variation = random.randint(100, 999)
     sender = template["sender"]
@@ -156,7 +169,7 @@ def sync_real_emails(db: Session, user_id: int):
             from app.services.agent_service import SYNC_HEARTBEATS
             import time
             for msg_meta in messages:
-                if processed_count >= 100:
+                if processed_count >= 500:
                     break
                     
                 last_beat = SYNC_HEARTBEATS.get(user_id, 0)
@@ -166,7 +179,14 @@ def sync_real_emails(db: Session, user_id: int):
                     
                 msg_id = msg_meta['id']
                 
-                # Prevent duplicate ingestion
+                # Prevent duplicate ingestion or re-importing deleted emails
+                deleted_email = db.query(models.DeletedEmail).filter(
+                    models.DeletedEmail.message_id == msg_id,
+                    models.DeletedEmail.user_id == user_id
+                ).first()
+                if deleted_email:
+                    continue
+
                 existing_email = db.query(models.Email).filter(
                     models.Email.message_id == msg_id,
                     models.Email.user_id == user_id
@@ -232,9 +252,8 @@ def sync_real_emails(db: Session, user_id: int):
                             body = body_raw
                 else:
                     body = get_gmail_body(parts)
-                            
-                AgentService.process_new_email(
-                    db=db,
+                # FAST INSERT for real-time UI reflection
+                db_email = models.Email(
                     user_id=user_id,
                     sender=sender,
                     recipient=user.email,
@@ -242,9 +261,40 @@ def sync_real_emails(db: Session, user_id: int):
                     body=body,
                     message_id=message_id,
                     received_at=received_at,
-                    raw_headers=headers
+                    category="Unclassified",
+                    priority="Medium",
+                    summary="Summary generation pending...",
+                    is_simulated=False,
+                    is_read=False
                 )
+                db.add(db_email)
+                db.commit()
                 
+            # AFTER FAST INSERT: Process all Unclassified emails with AI
+            unclassified = db.query(models.Email).filter(
+                models.Email.user_id == user_id,
+                models.Email.category == "Unclassified",
+                models.Email.is_simulated == False
+            ).all()
+            
+            for e in unclassified:
+                try:
+                    AgentService.process_new_email(
+                        db=db,
+                        user_id=user_id,
+                        sender=e.sender,
+                        recipient=e.recipient,
+                        subject=e.subject,
+                        body=e.body,
+                        message_id=e.message_id,
+                        received_at=e.received_at,
+                        existing_email_id=e.id
+                    )
+                    
+                    from app.notifications import NotificationService
+                    NotificationService.process_email_for_notification(db, e.id)
+                except Exception as exc:
+                    log_agent_activity("GMAIL_API_ERROR", f"Error classifying email {e.id}: {str(exc)}")
         except Exception as e:
             log_agent_activity("GMAIL_API_ERROR", f"Error during Gmail sync: {str(e)}")
 
@@ -279,8 +329,15 @@ def sync_real_emails(db: Session, user_id: int):
                 msg_headers = email.message_from_string(header_text)
                 message_id = msg_headers.get("Message-ID", "")
                 
-                # Check DB for duplicate Message-ID before downloading the full raw email
+                # Check DB for duplicate Message-ID or deleted email before downloading full email
                 if message_id:
+                    deleted_email = db.query(models.DeletedEmail).filter(
+                        models.DeletedEmail.message_id == message_id,
+                        models.DeletedEmail.user_id == user_id
+                    ).first()
+                    if deleted_email:
+                        continue
+
                     existing = db.query(models.Email).filter(
                         models.Email.message_id == message_id,
                         models.Email.user_id == user_id
@@ -338,8 +395,8 @@ def sync_real_emails(db: Session, user_id: int):
                     except:
                         pass
                         
-                AgentService.process_new_email(
-                    db=db,
+                # FAST INSERT for real-time UI reflection
+                db_email = models.Email(
                     user_id=user_id,
                     sender=sender,
                     recipient=user.email,
@@ -347,11 +404,44 @@ def sync_real_emails(db: Session, user_id: int):
                     body=body,
                     message_id=message_id,
                     received_at=received_at,
-                    raw_headers=[{"name": k, "value": v} for k, v in msg.items()]
+                    category="Unclassified",
+                    priority="Medium",
+                    summary="Summary generation pending...",
+                    is_simulated=False,
+                    is_read=False
                 )
+                db.add(db_email)
+                db.commit()
                 
             mail.close()
             mail.logout()
+            
+            # AFTER FAST INSERT: Process all Unclassified emails with AI
+            unclassified = db.query(models.Email).filter(
+                models.Email.user_id == user_id,
+                models.Email.category == "Unclassified",
+                models.Email.is_simulated == False
+            ).all()
+            
+            for e in unclassified:
+                try:
+                    AgentService.process_new_email(
+                        db=db,
+                        user_id=user_id,
+                        sender=e.sender,
+                        recipient=e.recipient,
+                        subject=e.subject,
+                        body=e.body,
+                        message_id=e.message_id,
+                        received_at=e.received_at,
+                        raw_headers=[],
+                        existing_email_id=e.id
+                    )
+                    
+                    from app.notifications import NotificationService
+                    NotificationService.process_email_for_notification(db, e.id)
+                except Exception as exc:
+                    log_agent_activity("IMAP_SYNC_ERROR", f"Error classifying email {e.id}: {str(exc)}")
         except Exception as e:
             log_agent_activity("IMAP_SYNC_ERROR", f"Error during IMAP sync: {str(e)}")
     else:

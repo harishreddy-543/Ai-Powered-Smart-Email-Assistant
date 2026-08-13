@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: Optional[str] = os.getenv("REDIS_PASSWORD", None)
 
     # API Keys & Third-party integrations
-    OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY", "")
+    GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY", "")
     HUGGINGFACE_API_KEY: Optional[str] = os.getenv("HUGGINGFACE_API_KEY", "")
     
     # Email settings
@@ -28,9 +28,13 @@ class Settings(BaseSettings):
     REAL_EMAIL_SYNC_ENABLED: bool = os.getenv("REAL_EMAIL_SYNC_ENABLED", "false").lower() == "true"
     IMAP_SERVER: Optional[str] = os.getenv("IMAP_SERVER", "imap.gmail.com")
     IMAP_USERNAME: Optional[str] = os.getenv("IMAP_USERNAME", "")
-    IMAP_PASSWORD: Optional[str] = os.getenv("IMAP_PASSWORD", "")  # App password
+    # Google OAuth
+    GOOGLE_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CLIENT_ID", "")
+    GOOGLE_CLIENT_SECRET: Optional[str] = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
     class Config:
         case_sensitive = True
+        env_file = ".env"
+        extra = "ignore"
 
 settings = Settings()

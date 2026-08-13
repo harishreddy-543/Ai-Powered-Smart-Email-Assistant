@@ -63,8 +63,16 @@ class Email(Base):
     is_simulated = Column(Boolean, default=False)
     is_spam = Column(Boolean, default=False)
     is_phishing = Column(Boolean, default=False)
+    is_starred = Column(Boolean, default=False)
+    system_label = Column(String, default="INBOX")
     
-    # Intelligence & Alerts
+    # Intelligence & Cleaning Pipeline
+    clean_body = Column(Text, nullable=True)
+    key_points = Column(Text, nullable=True)     # JSON encoded list of key points
+    intent = Column(String, nullable=True)
+    reply_required = Column(Boolean, default=False)
+    reply_reason = Column(String, nullable=True)
+    recommended_action = Column(String, nullable=True)
     summary = Column(Text, nullable=True)
     action_items = Column(Text, nullable=True) # JSON encoded list
     deadlines = Column(Text, nullable=True) # JSON encoded list
@@ -159,9 +167,56 @@ class Preferences(Base):
     summary_bullet_count = Column(Integer, default=5)
     
     # Alert Preferences (Stored as JSON strings)
-    alert_keywords = Column(Text, nullable=True) # e.g. '["TCS", "Infosys", "Data Analyst"]'
-    alert_categories = Column(Text, nullable=True) # e.g. '["Jobs", "Education", "Security"]'
+    alert_keywords = Column(Text, nullable=True) # Legacy
+    alert_categories = Column(Text, nullable=True) # Legacy
+    
+    # Advanced AI Preferences
+    career_interests = Column(Text, nullable=True) # e.g. '["Data Analyst", "AI Engineer"]'
+    favorite_companies = Column(Text, nullable=True) # e.g. '["Google", "TCS"]'
+    always_notify = Column(Text, nullable=True) # e.g. '["Interviews", "Security Alerts"]'
+    notification_methods = Column(Text, nullable=True) # e.g. '["Desktop", "Browser"]'
+    reminder_timing = Column(Text, nullable=True) # e.g. '["1 Day Before", "3 Hours Before"]'
+    ai_learning_enabled = Column(Boolean, default=True)
+    
     digest_enabled = Column(Boolean, default=True)
+    fcm_token = Column(String, nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="preferences")
+
+
+class ScheduledEmail(Base):
+    __tablename__ = 'scheduled_emails'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    to = Column(String, nullable=False)
+    cc = Column(String, nullable=True)
+    bcc = Column(String, nullable=True)
+    subject = Column(String, default='')
+    body = Column(Text, default='')
+    scheduled_at = Column(DateTime, nullable=False)
+    status = Column(String, default='pending')  # pending, sent, cancelled
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    user = relationship('User')
+
+
+class LinkedAccount(Base):
+    __tablename__ = 'linked_accounts'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    email = Column(String, nullable=False)
+    google_access_token = Column(String, nullable=True)
+    google_refresh_token = Column(String, nullable=True)
+    is_active = Column(Boolean, default=False)
+    display_name = Column(String, nullable=True)
+    last_synced_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    user = relationship('User')
+
+
+class DeletedEmail(Base):
+    __tablename__ = 'deleted_emails'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    message_id = Column(String, index=True, nullable=False)
+    deleted_at = Column(DateTime, default=datetime.datetime.utcnow)

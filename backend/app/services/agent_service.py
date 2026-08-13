@@ -1,3 +1,4 @@
+import json
 import datetime
 from sqlalchemy.orm import Session
 from typing import Dict, List, Any
@@ -29,6 +30,60 @@ def log_agent_activity(action: str, detail: str, email_subject: str = ""):
     except UnicodeEncodeError:
         print(f"[AGENT LOG] {action} | {detail.encode('ascii', 'ignore').decode('ascii')}")
 
+def classify_category_smart(sender: str, subject: str, body: str) -> str:
+    subj_lower = (subject or "").lower()
+    sender_lower = (sender or "").lower()
+    body_lower = (body or "").lower()[:2000]
+    
+    # 1. Security & Account
+    if any(k in subj_lower or k in body_lower for k in ["security alert", "password", "sign-in", "login", "otp", "verification", "auth", "suspicious activity", "access granted"]):
+        return "Security & Account"
+        
+    # 2. Education & Career
+    if any(k in sender_lower for k in ["linkedin", "unstop", "codegnan", "coursera", "naukri", "udemy", "edx", "scaler", "simplilearn", "geeksforgeeks", "hackerrank", "leetcode", "college.edu", "university.edu", "placements"]) or \
+       any(k in subj_lower or k in body_lower for k in ["interview", "job", "vacancy", "assessment", "placement", "recruitment", "exam", "test", "hiring", "application", "resume", "campus"]):
+        return "Education & Career"
+
+    # 3. Payments & Receipts
+    if any(k in sender_lower for k in ["paytm", "razorpay", "bank", "stripe", "paypal", "phonepe", "gpay", "cred", "hdfc", "icici", "sbi", "axis"]) or \
+       any(k in subj_lower for k in ["invoice", "payment", "transaction", "debited", "credited", "receipt", "billed", "paid", "rs.", "₹"]):
+        return "Payments"
+
+    # 4. Shopping & E-Commerce
+    if any(k in sender_lower for k in ["croma", "amazon", "flipkart", "myntra", "meesho", "ajio", "zara", "nykaa"]) or \
+       any(k in subj_lower for k in ["order", "shipped", "delivery", "out for delivery", "package"]):
+        return "Shopping"
+
+    # 5. Work & Projects
+    if any(k in subj_lower for k in ["project", "meeting", "deadline", "task", "review", "report", "client", "team", "jira", "github"]):
+        return "Work & Projects"
+
+    # 6. Promotions & Marketing
+    if any(k in subj_lower for k in ["%", "discount", "sale", "special offer", "cashback", "coupon", "limited time"]):
+        return "Promotions & Marketing"
+
+    # 7. Travel & Bookings
+    if any(k in sender_lower for k in ["uber", "ola", "rapido", "lyft", "redbus", "abhibus", "irctc", "makemytrip", "goibibo", "yatra"]) or \
+       any(k in subj_lower for k in ["booking", "ticket", "flight", "hotel"]):
+        return "Travel & Bookings"
+
+    return "Updates & Notifications"
+
+def generate_executive_summary(subject: str, clean_body: str) -> str:
+    subj = (subject or "").strip()
+    body = (clean_body or "").strip()
+    
+    sentences = [s.strip() for s in body.replace('\n', ' ').split('.') if len(s.strip()) > 15]
+    if sentences:
+        core_sentences = ". ".join(sentences[:2])
+        if not core_sentences.endswith('.'):
+            core_sentences += '.'
+        return f"{subj}: {core_sentences}" if subj and not core_sentences.lower().startswith(subj.lower()) else core_sentences
+    elif subj:
+        return f"Executive notification regarding: {subj}."
+    else:
+        return "Executive AI email brief summarizing message content and required context."
+
 class AgentService:
     @staticmethod
     def get_logs() -> List[Dict[str, Any]]:
@@ -45,7 +100,10 @@ class AgentService:
         message_id: str = None,
         thread_id: str = None,
         received_at: datetime.datetime = None,
-        raw_headers: List[Dict[str, str]] = None
+        raw_headers: List[Dict[str, str]] = None,
+        is_read: bool = False,
+        existing_email_id: int = None,
+        is_simulated: bool = False
     ) -> models.Email:
         """
         Runs the complete email processing workflow.
@@ -80,66 +138,106 @@ class AgentService:
         is_phishing = security_verdict["final_verdict"] == "Phishing"
         phishing_score = security_verdict["final_risk_score"]
         
-        # 2. General Categorization
-        log_agent_activity("CLASSIFYING_CATEGORY", "Evaluating email text using XGBoost classifier", subj_log)
-        if is_spam or is_phishing:
-            category = "Spam"
-        else:
-            category = MLService.classify_category(body)
-            subj_lower = subject.lower() if subject else ""
-            sender_lower = sender.lower() if sender else ""
-            
-            # --- 1. SENDER DOMAIN PRIORITY (Strict Mapping) ---
-            if any(d in sender_lower for d in ["linkedin", "unstop", "codegnan"]):
-                category = "Education & Career"
-            elif any(d in sender_lower for d in ["croma", "amazon", "flipkart", "myntra"]):
-                category = "Shopping"
-            elif any(d in sender_lower for d in ["paytm", "razorpay", "bank", "stripe", "paypal"]):
-                category = "Payments"
-            elif "google" in sender_lower:
-                if any(w in subj_lower for w in ["security", "alert", "password", "sign-in", "login", "recover"]):
-                    category = "Security & Account"
-                else:
-                    category = "Updates & Notifications"
-                    
-            # --- 2. SUBJECT-LEVEL PRIORITY (if sender didn't strongly match) ---
-            elif any(w in subj_lower for w in ["security alert", "password", "sign-in", "otp", "verification", "login"]):
-                category = "Security & Account"
-            elif any(w in subj_lower for w in ["invoice", "payment", "transaction", "debited", "credited"]):
-                category = "Payments"
-            elif any(w in subj_lower for w in ["order", "shipped", "delivery"]):
-                category = "Shopping"
+        # 2. General Categorization & Gemini LLM Classification
+        log_agent_activity("CLASSIFYING_CATEGORY", "Evaluating email using Gemini Intelligence and ML Fallbacks", subj_log)
+        iso_time = (received_at or datetime.datetime.utcnow()).isoformat()
+        
+        # Fetch user preferences to guide LLM and enforce strict matching rules
+        prefs = db.query(models.Preferences).filter(models.Preferences.user_id == user_id).first()
+        user_prefs_str = ""
+        
+        career_interests_lower = []
+        favorite_companies_lower = []
+        always_notify_lower = []
+        if prefs:
+            user_prefs_str = f"Career Interests: {prefs.career_interests}. Favorite Companies: {prefs.favorite_companies}. Always Notify: {prefs.always_notify}."
+            try:
+                career_interests_lower = [x.lower() for x in json.loads(prefs.career_interests) if x]
+                favorite_companies_lower = [x.lower() for x in json.loads(prefs.favorite_companies) if x]
+                always_notify_lower = [x.lower() for x in json.loads(prefs.always_notify) if x]
+            except Exception:
+                pass
                 
-            # --- 3. ML FALLBACK REMAPPING ---
-            else:
-                if category == "Finance & Payments":
-                    category = "Payments"
-                elif category == "Orders & Shopping":
-                    category = "Shopping"
-                elif category == "Action Required" or category == "Personal":
-                    category = "Updates & Notifications"
+        # Determine exact preference matches upfront
+        body_subj_lower = (subject + " " + body).lower()
+        sender_lower = (sender or "").lower()
+        matches_company = any(c in sender_lower or c in body_subj_lower for c in favorite_companies_lower if c)
+        matches_interest = any(i in body_subj_lower for i in career_interests_lower if i)
+        
+        gemini_res = LLMService.classify_email(sender, subject, body, iso_time, user_prefs_str)
+        
+        category = None
+        priority = None
+        sentiment = None
+        gemini_summary = None
+        gemini_action_items = None
+        gemini_deadlines = None
+        gemini_why_it_matters = None
+        
+        if gemini_res:
+            category = gemini_res.get("category")
+            priority = gemini_res.get("priority")
+            sentiment = gemini_res.get("sentiment")
+            gemini_summary = gemini_res.get("summary")
+            gemini_action_items = gemini_res.get("action_items")
+            gemini_deadlines = gemini_res.get("deadlines")
+            gemini_why_it_matters = gemini_res.get("why_it_matters")
+            
+        smart_cat = classify_category_smart(sender, subject, body)
+        
+        # Enforce exact matches (overriding LLM if it failed to pick them up)
+        if matches_company or matches_interest or ("placements" in always_notify_lower and "placement" in body_subj_lower) or ("interviews" in always_notify_lower and "interview" in body_subj_lower):
+            priority = "Critical"
+            if matches_interest or "placement" in body_subj_lower or "interview" in body_subj_lower:
+                category = "Education & Career"
+                
+        # If it was marked high priority (either by Gemini or our exact match enforcement), don't let basic spam filters override it
+        gemini_high_priority = priority in ["High", "Critical"]
+        
+        if (is_spam or is_phishing) and not gemini_high_priority:
+            category = "Spam"
+        elif smart_cat and smart_cat != "Updates & Notifications" and not category:
+            category = smart_cat
+        elif not category or category in ["Unclassified", "General", "None"]:
+            category = smart_cat or "General"
             
         # 3. Priority and Sentiment Prediction
         log_agent_activity("PREDICTING_PRIORITY", "Calculating business priority and urgency indicators", subj_log)
-        if is_phishing:
+        if is_phishing and not gemini_high_priority:
             priority = "Critical"
-        elif is_spam:
+        elif is_spam and not gemini_high_priority:
             priority = "Low"
-        else:
+        elif not priority:
             priority = MLService.predict_priority(body)
             
-        sentiment = MLService.analyze_sentiment(body)
+        if not sentiment:
+            sentiment = MLService.analyze_sentiment(body)
         
-        # 4. Create Email Record
+        from app.services.email_cleaner import UniversalEmailReader
+        clean_body = UniversalEmailReader.generate_reader_view(body)
+        exec_summary = gemini_summary or generate_executive_summary(subject, clean_body)
+        
+        # 4. Create Email Record with FULL Summary & Classification Insights
         db_email_args = {
             "user_id": user_id,
             "sender": sender,
             "recipient": recipient,
             "subject": subject,
             "body": body,
+            "clean_body": clean_body,
+            "summary": exec_summary,
+            "action_items": json.dumps(gemini_action_items or []),
+            "deadlines": json.dumps(gemini_deadlines or []),
+            "why_it_matters": gemini_why_it_matters or "",
+            "key_points": json.dumps(gemini_res.get("key_points", [])) if gemini_res else None,
+            "intent": gemini_res.get("intent") if gemini_res else None,
+            "reply_required": gemini_res.get("reply_required", False) if gemini_res else False,
+            "reply_reason": gemini_res.get("reply_reason") if gemini_res else None,
+            "recommended_action": gemini_res.get("recommended_action") if gemini_res else None,
             "message_id": message_id or f"msg_{int(datetime.datetime.utcnow().timestamp())}",
             "thread_id": thread_id or f"thread_{int(datetime.datetime.utcnow().timestamp())}",
-            "is_read": False,
+            "is_read": is_read,
+            "is_simulated": is_simulated,
             "category": category,
             "priority": priority,
             "sentiment": sentiment,
@@ -158,8 +256,17 @@ class AgentService:
         if received_at:
             db_email_args["received_at"] = received_at
             
-        db_email = models.Email(**db_email_args)
-        db.add(db_email)
+        db_email = None
+        if existing_email_id:
+            db_email = db.query(models.Email).filter(models.Email.id == existing_email_id).first()
+            if db_email:
+                for k, v in db_email_args.items():
+                    setattr(db_email, k, v)
+                    
+        if not db_email:
+            db_email = models.Email(**db_email_args)
+            db.add(db_email)
+            
         db.commit()
         db.refresh(db_email)
         
@@ -173,14 +280,21 @@ class AgentService:
                 entity_type=ent["entity_type"],
                 entity_value=ent["entity_value"]
             )
-            db.add(db_ent)
             db_entities.append(db_ent)
+        db.add_all(db_entities)
         db.commit()
         
-        # 6. Index in Vector Database
-        log_agent_activity("INDEXING_VECTOR", f"Generating semantic embeddings and saving to local Vector DB index", subj_log)
+        # 6. Index into Vector Store
+        log_agent_activity("VECTOR_INDEXING", "Generating embeddings and indexing into FAISS vector db", subj_log)
         try:
-            vector_service.index_email(db_email.id, subject, body)
+            from app.services.rag_service import RAGService
+            RAGService.index_email(
+                email_id=db_email.id,
+                subject=subject,
+                sender=sender,
+                body=body,
+                user_id=user_id
+            )
         except Exception as e:
             log_agent_activity("INDEXING_ERROR", f"Failed vector storage sync: {str(e)}", subj_log)
             
@@ -192,17 +306,18 @@ class AgentService:
             db.commit()
             db.refresh(pref)
             
-        # 8. Run Extraction & Summarization
+        # 8. Run Extraction & Summarization Fallback Check
         log_agent_activity("LLM_EXTRACTION", "Extracting actionable insights, deadlines, and summary", subj_log)
-        iso_time = (received_at or datetime.datetime.utcnow()).isoformat()
-        insights = LLMService.extract_actionable_insights(subject, body, iso_time)
-        import json
-        if insights:
-            db_email.summary = insights.get("summary", "")
-            db_email.action_items = json.dumps(insights.get("action_items", []))
-            db_email.deadlines = json.dumps(insights.get("deadlines", []))
-            db_email.why_it_matters = insights.get("why_it_matters", "")
-        db.commit()
+        if not db_email.summary or db_email.summary == "Summary generation pending...":
+            insights = LLMService.extract_actionable_insights(subject, body, iso_time)
+            if insights and insights.get("summary"):
+                db_email.summary = insights.get("summary")
+                db_email.action_items = json.dumps(insights.get("action_items", []))
+                db_email.deadlines = json.dumps(insights.get("deadlines", []))
+                db_email.why_it_matters = insights.get("why_it_matters", "")
+            else:
+                db_email.summary = generate_executive_summary(subject, clean_body)
+            db.commit()
         
         # 8b. Personalized Alert Decision Engine
         log_agent_activity("ALERT_DECISION", "Evaluating if email requires mobile notification", subj_log)
@@ -211,50 +326,53 @@ class AgentService:
         alert_type = "Watchlist"
         severity = "Medium"
         
-        # Extract keywords and categories safely from JSON
-        alert_keywords = []
-        alert_categories = []
-        if pref:
-            try:
-                alert_keywords = json.loads(pref.alert_keywords) if pref.alert_keywords else []
-                alert_categories = json.loads(pref.alert_categories) if pref.alert_categories else []
-            except Exception:
-                pass
+        # Determine Alert Need (New Intelligent Categories)
+        has_deadline = bool(db_email.deadlines and db_email.deadlines != '[]' and db_email.deadlines != 'null')
+        has_action = bool(db_email.action_items and db_email.action_items != '[]' and db_email.action_items != 'null')
+        action_text = (db_email.action_items or "").lower()
         
-        # Determine Alert Need (User's rules)
-        if is_phishing:
+        if is_phishing and not gemini_high_priority:
             needs_alert = True
-            alert_reason = "High Security Risk / Phishing"
-            alert_type = "Security"
+            alert_type = "Security Alert"
+            alert_reason = "Possible phishing link detected. Avoid clicking any unexpected links."
             severity = "Critical"
-        elif priority == "Critical":
+        elif (is_spam and not gemini_high_priority) or category == "Promotions":
+            needs_alert = False  # Spam/Promos go to spam folder, no alert
+        elif "delivery status notification (failure)" in body_subj_lower or "undelivered mail returned" in body_subj_lower:
             needs_alert = True
-            alert_reason = "Critical Priority"
-            alert_type = "Priority"
-            severity = "Critical"
-        else:
-            # Check watchlist keywords
-            body_subj_lower = (subject + " " + body).lower()
-            keyword_match = next((kw for kw in alert_keywords if kw.lower() in body_subj_lower), None)
-            
-            # Check actionable state
-            has_action_or_deadline = bool(insights and (insights.get("action_items") or insights.get("deadlines")))
-            
-            if keyword_match and has_action_or_deadline:
-                needs_alert = True
-                alert_reason = f"Watchlist match: {keyword_match}"
-                alert_type = "Watchlist"
-                severity = priority
-            elif category in alert_categories and has_action_or_deadline:
-                needs_alert = True
-                alert_reason = f"Priority category: {category} with action required"
-                alert_type = category
-                severity = priority
-            elif category in ["Education & Career", "Payments"] and has_action_or_deadline and priority in ["High", "Critical"]:
-                needs_alert = True
-                alert_reason = f"Important {category} deadline/action"
-                alert_type = category
-                severity = priority
+            alert_type = "Delivery Failed"
+            alert_reason = "Your email couldn't be delivered to the recipient."
+            severity = "High"
+        elif "interview" in body_subj_lower or "interview" in action_text or "interviews" in always_notify_lower:
+            needs_alert = True
+            alert_type = "Interview Alert"
+            alert_reason = "An interview has been scheduled or requested."
+            severity = "High"
+        elif has_deadline or "deadlines" in always_notify_lower or any(k in body_subj_lower for k in ["deadline", "due date", "due by", "submit before", "expires"]):
+            needs_alert = True
+            alert_type = "Deadline Alert"
+            alert_reason = "An important deadline is approaching soon."
+            severity = "High"
+        elif category == "Education & Career" or "placements" in always_notify_lower or matches_interest or matches_company:
+            needs_alert = True
+            alert_type = "Placement Alert"
+            alert_reason = "Academic, career, or placement opportunity detected."
+            severity = "High"
+        elif (category == "Payments" and has_action) or "payments" in always_notify_lower:
+            needs_alert = True
+            alert_type = "Payment Reminder"
+            alert_reason = "A payment or bill requires your attention."
+            severity = "Medium"
+        elif has_action or "reply required" in always_notify_lower:
+            needs_alert = True
+            alert_type = "Action Required"
+            alert_reason = "A reply or specific action is needed from you."
+            severity = "Medium"
+        elif matches_company:
+            needs_alert = True
+            alert_type = "Company Update"
+            alert_reason = "Email from a favorite company on your watchlist."
+            severity = "Low"
         
         db_email.needs_alert = needs_alert
         if needs_alert:
@@ -263,7 +381,7 @@ class AgentService:
                 email_id=db_email.id,
                 alert_type=alert_type,
                 severity=severity,
-                title=f"{alert_type} Alert",
+                title=subject[:50] + ("..." if len(subject) > 50 else ""),
                 message=db_email.summary or subject,
                 trigger_reason=alert_reason
             )

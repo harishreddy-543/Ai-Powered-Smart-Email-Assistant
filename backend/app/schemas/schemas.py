@@ -34,6 +34,13 @@ class PreferencesBase(BaseModel):
     alert_keywords: Optional[str] = None
     alert_categories: Optional[str] = None
     digest_enabled: bool = True
+    career_interests: Optional[str] = None
+    favorite_companies: Optional[str] = None
+    always_notify: Optional[str] = None
+    notification_methods: Optional[str] = None
+    reminder_timing: Optional[str] = None
+    ai_learning_enabled: bool = True
+    fcm_token: Optional[str] = None
 
 class PreferencesUpdate(PreferencesBase):
     pass
@@ -108,7 +115,13 @@ class EmailBase(BaseModel):
     subject: Optional[str] = None
     body: Optional[str] = None
     
-    # Intelligence & Alerts
+    # Intelligence & Cleaning Pipeline
+    clean_body: Optional[str] = None
+    key_points: Optional[str] = None
+    intent: Optional[str] = None
+    reply_required: bool = False
+    reply_reason: Optional[str] = None
+    recommended_action: Optional[str] = None
     summary: Optional[str] = None
     action_items: Optional[str] = None
     deadlines: Optional[str] = None
@@ -131,6 +144,8 @@ class EmailResponse(EmailBase):
     is_spam: bool
     is_phishing: bool
     is_simulated: bool = False
+    is_starred: bool = False
+    system_label: str = "INBOX"
     
     # Security Engine Signals
     spf_status: Optional[str] = None
@@ -164,6 +179,7 @@ class AlertResponse(AlertBase):
     id: int
     email_id: int
     created_at: datetime
+    email: Optional[EmailBase] = None
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -171,6 +187,8 @@ class EmailUpdate(BaseModel):
     is_read: Optional[bool] = None
     category: Optional[str] = None
     priority: Optional[str] = None
+    is_starred: Optional[bool] = None
+    system_label: Optional[str] = None
 
 # --- Search Schemas ---
 class SearchResult(BaseModel):
@@ -204,8 +222,75 @@ class PhishingSpamStats(BaseModel):
     phishing_count: int
     clean_count: int
 
+class KpiStats(BaseModel):
+    new_emails_today: int
+    new_emails_since_morning: int
+    high_priority_total: int
+    high_priority_action_today: int
+    security_threats_total: int
+    phishing_count: int
+    suspicious_count: int
+    upcoming_deadlines_total: int
+    next_deadline_title: str | None = None
+    next_deadline_time: str | None = None
+
+class ThreatTrendPoint(BaseModel):
+    date: str
+    processed: int
+    spam: int
+    suspicious: int
+    phishing: int
+
+class SecurityThreatBreakdown(BaseModel):
+    safe: int
+    spam: int
+    suspicious: int
+    phishing: int
+
+class PriorityActionIntelligence(BaseModel):
+    critical: int
+    high: int
+    medium: int
+    low: int
+    requires_action: int
+    no_action: int
+
+class DeadlineItem(BaseModel):
+    id: int
+    title: str
+    datetime: str
+    type: str
+    remaining: str
+
+class AiAutomationImpact(BaseModel):
+    emails_summarized: int
+    action_items_extracted: int
+    deadlines_detected: int
+    smart_replies_generated: int
+    replies_approved_sent: int
+    priority_alerts_triggered: int
+
+class HourlyVolumePoint(BaseModel):
+    hour: str
+    count: int
+
+class ThreatGeoIpSignal(BaseModel):
+    ip: str
+    location: str
+    threat_type: str
+    timestamp: str
+    action: str
+
 class AnalyticsResponse(BaseModel):
     category_distribution: List[CategoryCount]
     priority_distribution: List[PriorityCount]
     daily_volume: List[DailyEmailVolume]
     security_stats: PhishingSpamStats
+    kpi_stats: KpiStats
+    threat_trend: List[ThreatTrendPoint] = []
+    security_breakdown: SecurityThreatBreakdown
+    priority_action: PriorityActionIntelligence
+    deadline_timeline: List[DeadlineItem] = []
+    automation_impact: AiAutomationImpact
+    hourly_distribution: List[HourlyVolumePoint] = []
+    threat_geo_signals: List[ThreatGeoIpSignal] = []
