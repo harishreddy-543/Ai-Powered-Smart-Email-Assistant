@@ -223,18 +223,18 @@ const LandingPage = ({ onEnterDashboard }) => {
       </nav>
 
       {/* ===== HERO SECTION ===== */}
-      <section className="relative z-10 max-w-7xl mx-auto px-8 pt-12 pb-20 lg:pt-20 lg:pb-32">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-8 lg:pt-20 pb-16 lg:pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left: Text Content */}
           <div className={`transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 mb-6 sm:mb-8">
               <Zap className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">AI-Powered Email Command Center</span>
+              <span className="text-[10px] sm:text-[11px] font-bold text-cyan-400 uppercase tracking-widest">AI-Powered Email Command Center</span>
             </div>
 
             {/* Main heading */}
-            <h1 className="text-5xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-4 sm:mb-6">
               <span className="text-white">Secure</span>
               <br />
               <span className="text-white">Your Inbox</span>
@@ -249,7 +249,7 @@ const LandingPage = ({ onEnterDashboard }) => {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base lg:text-lg text-zinc-400 leading-relaxed max-w-lg mb-10">
+            <p className="text-sm sm:text-base lg:text-lg text-zinc-400 leading-relaxed max-w-lg mb-8 sm:mb-10">
               Next-generation AI email assistant. Harnessing 12 machine learning models for real-time classification, phishing detection, smart replies, and autonomous email management.
             </p>
 
@@ -257,7 +257,7 @@ const LandingPage = ({ onEnterDashboard }) => {
             <div className="flex flex-wrap gap-4">
               <button
                 onClick={handleEnter}
-                className="group relative flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-base shadow-2xl shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 overflow-hidden"
+                className="group relative flex items-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm sm:text-base shadow-2xl shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 overflow-hidden"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <span className="relative flex items-center gap-3">
@@ -266,7 +266,7 @@ const LandingPage = ({ onEnterDashboard }) => {
                   <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </button>
-              <div className="flex items-center gap-2 px-5 py-4 rounded-2xl border border-zinc-800/80 text-zinc-400 text-sm font-medium">
+              <div className="flex items-center gap-2 px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl border border-zinc-800/80 text-zinc-400 text-xs sm:text-sm font-medium">
                 <Shield className="w-4 h-4 text-emerald-400" />
                 <span>SOC-2 Compliant · Zero Data Leaks</span>
               </div>
@@ -291,7 +291,7 @@ const LandingPage = ({ onEnterDashboard }) => {
                 <img
                   src="/hero-logo.png"
                   alt="AI Mail Assistant - Secure Emails"
-                  className="w-[340px] h-[340px] lg:w-[450px] lg:h-[450px] object-contain rounded-2xl drop-shadow-[0_10px_35px_rgba(0,0,0,0.8)] group-hover:scale-[1.02] transition-transform duration-500"
+                  className="w-[260px] h-[260px] sm:w-[340px] sm:h-[340px] lg:w-[450px] lg:h-[450px] object-contain rounded-2xl drop-shadow-[0_10px_35px_rgba(0,0,0,0.8)] group-hover:scale-[1.02] transition-transform duration-500"
                 />
                 
                 {/* Subtle sheen highlight */}

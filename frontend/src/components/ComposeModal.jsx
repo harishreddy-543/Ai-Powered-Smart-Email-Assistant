@@ -172,8 +172,8 @@ export default function ComposeModal({ isOpen, onClose, onSendWithUndo, initialD
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1e1e24] w-full max-w-3xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-[#1e1e24] w-full max-w-3xl max-h-[92vh] my-auto rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-[#25252b] border-b border-white/10">

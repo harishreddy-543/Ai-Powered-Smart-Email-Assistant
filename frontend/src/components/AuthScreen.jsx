@@ -374,23 +374,23 @@ export default function AuthScreen({ isGoogleConnecting, setIsGoogleConnecting, 
       </div>
 
       {/* ── TOP NAV BAR ── */}
-      <nav className={`relative z-10 flex items-center justify-between px-8 py-5 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-6'}`}>
-        <div className="flex items-center gap-3 group cursor-pointer">
+      <nav className={`relative z-10 flex items-center justify-between px-4 sm:px-8 py-3 sm:py-5 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-6'}`}>
+        <div className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer">
           <div className="p-0.5 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-500 to-purple-600 border border-cyan-400/40 shadow-lg shadow-cyan-500/30 group-hover:scale-105 transition-transform duration-300">
-            <img src="/icon-logo.png" alt="AI Powered Email Assistant" className="w-10 h-10 object-cover rounded-[10px]" />
+            <img src="/icon-logo.png" alt="AI Powered Email Assistant" className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-[8px] sm:rounded-[10px]" />
           </div>
           <div>
-            <span className="text-white font-extrabold text-lg tracking-tight group-hover:text-cyan-400 transition-colors">AI Powered Email Assistant</span>
-            <span className="block text-[10px] text-cyan-400/80 font-bold tracking-widest uppercase">Autonomous Email Protection</span>
+            <span className="text-white font-extrabold text-sm sm:text-lg tracking-tight group-hover:text-cyan-400 transition-colors">AI Powered Email Assistant</span>
+            <span className="block text-[8px] sm:text-[10px] text-cyan-400/80 font-bold tracking-widest uppercase">Autonomous Email Protection</span>
           </div>
         </div>
       </nav>
 
       {/* ═══ MAIN HERO SECTION ═══ */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 pt-4 pb-8 flex flex-col items-center">
+      <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-2 sm:pt-4 pb-8 flex flex-col items-center">
 
         {/* ── HERO IMAGE ── */}
-        <div className={`relative mb-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-16 scale-90'}`}>
+        <div className={`relative mb-6 sm:mb-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-16 scale-90'}`}>
           <div
             className="relative group cursor-pointer"
             style={{
@@ -399,56 +399,56 @@ export default function AuthScreen({ isGoogleConnecting, setIsGoogleConnecting, 
             }}
           >
             {/* Animated glow frame */}
-            <div className="absolute inset-[-3px] rounded-3xl bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 opacity-40 group-hover:opacity-70 blur-sm transition-opacity duration-500 pointer-events-none hero-glow-animate" />
+            <div className="absolute inset-[-3px] rounded-2xl sm:rounded-3xl bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 opacity-40 group-hover:opacity-70 blur-sm transition-opacity duration-500 pointer-events-none hero-glow-animate" />
 
             {/* Platform glow */}
             <div className="absolute bottom-[-25px] left-1/2 -translate-x-1/2 w-[75%] h-[40px] rounded-full bg-cyan-500/30 blur-2xl group-hover:bg-cyan-500/45 transition-all duration-500 pointer-events-none" />
 
             {/* Hero Image */}
-            <div className="relative z-10 rounded-3xl overflow-hidden">
+            <div className="relative z-10 rounded-2xl sm:rounded-3xl overflow-hidden">
               <img
                 src="/gmail-hero.jpg"
                 alt="Sign in with Google - AI Email Assistant"
-                className="w-[420px] h-[315px] sm:w-[550px] sm:h-[412px] lg:w-[650px] lg:h-[487px] object-cover rounded-3xl group-hover:scale-[1.015] transition-transform duration-500"
+                className="w-[280px] h-[210px] sm:w-[480px] sm:h-[360px] lg:w-[650px] lg:h-[487px] object-cover rounded-2xl sm:rounded-3xl group-hover:scale-[1.015] transition-transform duration-500"
               />
               
               {/* Animated scanline */}
               <div className="absolute left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent pointer-events-none" style={{ animation: 'scanline-move 3s linear infinite' }} />
               
               {/* Vignette overlay */}
-              <div className="absolute inset-0 rounded-3xl shadow-[inset_0_0_80px_rgba(0,0,0,0.6)] pointer-events-none" />
+              <div className="absolute inset-0 rounded-2xl sm:rounded-3xl shadow-[inset_0_0_80px_rgba(0,0,0,0.6)] pointer-events-none" />
             </div>
 
             {/* ── FLOATING BADGES (AUTHENTICATION & CLOUD RELEVANT) ── */}
-            <div className="auth-float absolute top-5 right-[-15px] sm:right-[-30px] px-4 py-2.5 rounded-xl bg-[#0a0f1a]/95 border border-emerald-500/30 shadow-[0_4px_25px_rgba(16,185,129,0.2)] backdrop-blur-xl z-20">
-              <div className="flex items-center gap-2.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
-                <span className="text-[11px] font-extrabold text-emerald-400 tracking-wider uppercase font-mono">🔐 GOOGLE OAUTH 2.0</span>
+            <div className="auth-float absolute top-3 sm:top-5 right-1 sm:right-[-30px] px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#0a0f1a]/95 border border-emerald-500/30 shadow-[0_4px_25px_rgba(16,185,129,0.2)] backdrop-blur-xl z-20">
+              <div className="flex items-center gap-1.5 sm:gap-2.5">
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
+                <span className="text-[9px] sm:text-[11px] font-extrabold text-emerald-400 tracking-wider uppercase font-mono">🔐 GOOGLE OAUTH 2.0</span>
               </div>
             </div>
 
-            <div className="auth-float-alt absolute bottom-14 left-[-15px] sm:left-[-30px] px-4 py-2.5 rounded-xl bg-[#0a0f1a]/95 border border-cyan-500/30 shadow-[0_4px_25px_rgba(6,182,212,0.2)] backdrop-blur-xl z-20" style={{ animationDelay: '1.5s' }}>
-              <div className="flex items-center gap-2.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
-                <span className="text-[11px] font-extrabold text-cyan-400 tracking-wider uppercase font-mono">☁️ GMAIL SYNC READY</span>
+            <div className="auth-float-alt absolute bottom-8 sm:bottom-14 left-1 sm:left-[-30px] px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#0a0f1a]/95 border border-cyan-500/30 shadow-[0_4px_25px_rgba(6,182,212,0.2)] backdrop-blur-xl z-20" style={{ animationDelay: '1.5s' }}>
+              <div className="flex items-center gap-1.5 sm:gap-2.5">
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
+                <span className="text-[9px] sm:text-[11px] font-extrabold text-cyan-400 tracking-wider uppercase font-mono">☁️ GMAIL SYNC READY</span>
               </div>
             </div>
 
-            <div className="auth-float absolute top-[50%] right-[-20px] sm:right-[-40px] px-4 py-2.5 rounded-xl bg-[#0a0f1a]/95 border border-purple-500/30 shadow-[0_4px_25px_rgba(168,85,247,0.2)] backdrop-blur-xl z-20" style={{ animationDelay: '3s' }}>
-              <div className="flex items-center gap-2.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_10px_rgba(192,132,252,0.9)]" />
-                <span className="text-[11px] font-extrabold text-purple-400 tracking-wider uppercase font-mono">🛡️ ZERO-DATA LEAK</span>
+            <div className="auth-float absolute top-[45%] sm:top-[50%] right-1 sm:right-[-40px] px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#0a0f1a]/95 border border-purple-500/30 shadow-[0_4px_25px_rgba(168,85,247,0.2)] backdrop-blur-xl z-20" style={{ animationDelay: '3s' }}>
+              <div className="flex items-center gap-1.5 sm:gap-2.5">
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-purple-400 shadow-[0_0_10px_rgba(192,132,252,0.9)]" />
+                <span className="text-[9px] sm:text-[11px] font-extrabold text-purple-400 tracking-wider uppercase font-mono">🛡️ ZERO-DATA LEAK</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* ── SIGN IN TEXT ── */}
-        <div className={`text-center mb-8 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-3 text-white">
+        <div className={`text-center mb-6 sm:mb-8 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-2 sm:mb-3 text-white">
             Sign in with <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400">Google</span>
           </h1>
-          <p className="text-base sm:text-lg text-transparent bg-clip-text bg-gradient-to-r from-cyan-400/80 to-purple-400/80 font-semibold tracking-wide">
+          <p className="text-sm sm:text-lg text-transparent bg-clip-text bg-gradient-to-r from-cyan-400/80 to-purple-400/80 font-semibold tracking-wide">
             Access anywhere. Anytime.
           </p>
         </div>

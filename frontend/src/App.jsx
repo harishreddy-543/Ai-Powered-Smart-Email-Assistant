@@ -1990,24 +1990,24 @@ export default function App() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#0a0a0f] text-white font-sans">
       {/* ===== GLOBAL HEADER ===== */}
-      <header className="h-16 border-b border-zinc-800/50 flex items-center justify-between px-6 shrink-0 bg-[#0a0a0f]">
+      <header className="min-h-16 py-2 border-b border-zinc-800/50 flex flex-wrap md:flex-nowrap items-center justify-between px-3 sm:px-6 gap-2 sm:gap-4 shrink-0 bg-[#0a0a0f] z-30">
         {/* Logo — Clickable to return to Inbox */}
         <div 
           onClick={() => setShowLanding(true)} 
-          className="flex items-center gap-3 w-[290px] cursor-pointer group hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2.5 sm:gap-3 w-auto lg:w-[290px] cursor-pointer group hover:opacity-90 transition-opacity"
           title="Return to Landing Page"
         >
           <div className="p-0.5 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-500 to-purple-600 border border-cyan-400/40 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-            <img src="/icon-logo.png" alt="AI Powered Email Assistant" className="w-8 h-8 object-cover rounded-[8px]" />
+            <img src="/icon-logo.png" alt="AI Powered Email Assistant" className="w-7 h-7 sm:w-8 sm:h-8 object-cover rounded-[8px]" />
           </div>
           <div>
-            <h1 className="text-[13px] font-extrabold tracking-wide text-white group-hover:text-cyan-400 transition-colors">AI Powered Email Assistant</h1>
-            <span className="text-[9px] text-cyan-400/80 font-bold tracking-widest uppercase block mt-0.5">Autonomous Security</span>
+            <h1 className="text-[12px] sm:text-[13px] font-extrabold tracking-wide text-white group-hover:text-cyan-400 transition-colors truncate max-w-[160px] sm:max-w-none">AI Powered Email Assistant</h1>
+            <span className="text-[8px] sm:text-[9px] text-cyan-400/80 font-bold tracking-widest uppercase block mt-0.5">Autonomous Security</span>
           </div>
         </div>
 
         {/* Global Search — Gmail-style with live suggestions */}
-        <div className="flex-1 max-w-2xl px-4">
+        <div className="flex-1 min-w-[160px] max-w-2xl px-1 sm:px-4 order-3 md:order-2 w-full md:w-auto">
           <div className="relative group">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-blue-400 transition-colors z-10 pointer-events-none" />
             <input 
@@ -2021,7 +2021,7 @@ export default function App() {
               }}
               onFocus={() => { if (searchQuery && searchSuggestions.length > 0) setShowSuggestions(true); }}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-              className="w-full bg-zinc-900/50 border border-zinc-800 rounded-full py-2 pl-10 pr-10 text-[13px] text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/20 hover:border-blue-500/40 hover:bg-[#0F131D] transition-all duration-300 shadow-inner hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]"
+              className="w-full bg-zinc-900/50 border border-zinc-800 rounded-full py-1.5 sm:py-2 pl-10 pr-10 text-[12px] sm:text-[13px] text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/20 hover:border-blue-500/40 hover:bg-[#0F131D] transition-all duration-300 shadow-inner hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]"
             />
             {searchQuery && !isSearching && (
               <button onClick={() => { setSearchQuery(''); setIsSearchActive(false); setSearchResults([]); setSearchSuggestions([]); setShowSuggestions(false); setActiveTab('inbox'); }}
@@ -2051,13 +2051,13 @@ export default function App() {
         </div>
 
         {/* Status Badges & User */}
-        <div className="flex items-center gap-3 shrink-0 relative z-10">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 relative z-10 order-2 md:order-3">
 
           {/* Main View Toggle Pill */}
           <div className="flex bg-zinc-900 border border-zinc-700/60 p-1 rounded-full shadow-inner hover:border-blue-500/30 transition-colors">
             <button 
               onClick={() => setMainViewTab('inbox')}
-              className={`group relative overflow-hidden px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
+              className={`group relative overflow-hidden px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 flex items-center gap-1 sm:gap-1.5 cursor-pointer ${
                 mainViewTab === 'inbox' 
                   ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
                   : 'text-zinc-400 hover:text-white hover:bg-blue-500/10'
@@ -2067,7 +2067,7 @@ export default function App() {
             </button>
             <button 
               onClick={() => setMainViewTab('analytics')}
-              className={`group relative overflow-hidden px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
+              className={`group relative overflow-hidden px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 flex items-center gap-1 sm:gap-1.5 cursor-pointer ${
                 mainViewTab === 'analytics' 
                   ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.4)]' 
                   : 'text-zinc-400 hover:text-white hover:bg-purple-500/10'
@@ -2078,7 +2078,7 @@ export default function App() {
           </div>
           
           {/* Test Lab Button */}
-          <button onClick={() => setIsTestLabOpen(true)} className="group relative overflow-hidden px-3 py-1.5 rounded-full border border-purple-500/50 text-[10px] font-bold text-purple-400 hover:text-white bg-purple-500/10 hover:bg-[#0F131D] flex items-center gap-1.5 transition-all duration-300 hover:border-purple-400 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:-translate-y-0.5">
+          <button onClick={() => setIsTestLabOpen(true)} className="hidden sm:flex group relative overflow-hidden px-3 py-1.5 rounded-full border border-purple-500/50 text-[10px] font-bold text-purple-400 hover:text-white bg-purple-500/10 hover:bg-[#0F131D] items-center gap-1.5 transition-all duration-300 hover:border-purple-400 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:-translate-y-0.5">
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: 'radial-gradient(circle at center, rgba(168,85,247,0.2), transparent 70%)' }} />
             <Layers className="w-3.5 h-3.5 relative z-10 transition-transform group-hover:scale-110" /> <span className="relative z-10">{isSimulating ? 'Running...' : 'Test Lab'}</span>
           </button>
@@ -2088,20 +2088,20 @@ export default function App() {
           
           <button 
             onClick={() => setIsComposeOpen(true)}
-            className="group relative overflow-hidden px-4 py-1.5 rounded-full bg-white text-black text-[11px] font-black tracking-widest hover:bg-zinc-100 transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] flex items-center gap-2 hover:-translate-y-0.5 hover:scale-105 cursor-pointer"
+            className="group relative overflow-hidden px-3 sm:px-4 py-1.5 rounded-full bg-white text-black text-[10px] sm:text-[11px] font-black tracking-widest hover:bg-zinc-100 transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] flex items-center gap-1.5 sm:gap-2 hover:-translate-y-0.5 hover:scale-105 cursor-pointer"
           >
             <Edit className="w-3.5 h-3.5 transition-transform group-hover:rotate-12" /> <span className="relative z-10">COMPOSE</span>
           </button>
 
-            <button onClick={() => isSyncing ? handleStopSync() : setIsSyncing(true)} className={`group relative overflow-hidden px-3 py-1.5 rounded-full border text-[10px] font-bold flex items-center gap-1.5 transition-all duration-300 hover:-translate-y-0.5 ${isSyncing ? 'border-red-500/50 text-red-400 bg-red-500/10 hover:bg-red-500/20 hover:border-red-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-zinc-700/50 text-zinc-400 bg-zinc-800/20 hover:bg-[#0F131D] hover:border-blue-500/50 hover:text-blue-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)]'}`}>
-              <RefreshCw className={`w-3.5 h-3.5 relative z-10 transition-transform ${isSyncing ? 'animate-spin' : 'group-hover:rotate-180'}`} /> <span className="relative z-10">{isSyncing ? 'Stop Sync' : 'Start Sync'}</span>
-            </button>
+          <button onClick={() => isSyncing ? handleStopSync() : setIsSyncing(true)} className={`group relative overflow-hidden px-2.5 sm:px-3 py-1.5 rounded-full border text-[10px] font-bold flex items-center gap-1 sm:gap-1.5 transition-all duration-300 hover:-translate-y-0.5 ${isSyncing ? 'border-red-500/50 text-red-400 bg-red-500/10 hover:bg-red-500/20 hover:border-red-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-zinc-700/50 text-zinc-400 bg-zinc-800/20 hover:bg-[#0F131D] hover:border-blue-500/50 hover:text-blue-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)]'}`}>
+            <RefreshCw className={`w-3.5 h-3.5 relative z-10 transition-transform ${isSyncing ? 'animate-spin' : 'group-hover:rotate-180'}`} /> <span className="relative z-10 hidden sm:inline">{isSyncing ? 'Stop Sync' : 'Start Sync'}</span><span className="sm:hidden">{isSyncing ? 'Stop' : 'Sync'}</span>
+          </button>
           
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-teal-500/20 text-[10px] text-teal-400 font-bold bg-teal-500/5 shadow-[0_0_10px_rgba(20,184,166,0.1)] hover:shadow-[0_0_20px_rgba(20,184,166,0.2)] transition-shadow duration-300 cursor-default">
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-teal-500/20 text-[10px] text-teal-400 font-bold bg-teal-500/5 shadow-[0_0_10px_rgba(20,184,166,0.1)] hover:shadow-[0_0_20px_rgba(20,184,166,0.2)] transition-shadow duration-300 cursor-default">
             <Activity className="w-3.5 h-3.5" /> Pipeline healthy
           </div>
 
-          <button onClick={fetchDigest} className="group relative overflow-hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 hover:bg-[#0F131D] transition-all duration-300 text-xs font-semibold border border-blue-500/20 hover:border-blue-400 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:-translate-y-0.5">
+          <button onClick={fetchDigest} className="hidden sm:flex group relative overflow-hidden items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 hover:bg-[#0F131D] transition-all duration-300 text-xs font-semibold border border-blue-500/20 hover:border-blue-400 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:-translate-y-0.5">
             <Sparkles className="w-3.5 h-3.5" /> AI Digest
           </button>
           
@@ -2240,10 +2240,10 @@ export default function App() {
       </header>
 
       {/* ===== MAIN DASHBOARD CONTENT ===== */}
-      <main className="flex-1 flex flex-col min-w-0 p-5 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 p-3 sm:p-5 overflow-y-auto lg:overflow-hidden">
         
         {/* KPI Cards Row */}
-        <div className="grid grid-cols-5 gap-5 mb-5 shrink-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-5 mb-4 sm:mb-5 shrink-0">
           {/* Card 1: Emails processed */}
           <div 
             onClick={() => { setSecurityFilter('all'); setMainViewTab('inbox'); }} 
@@ -2522,10 +2522,10 @@ export default function App() {
         {mainViewTab === 'analytics' ? (
           renderMncAnalyticsSuite()
         ) : (
-        <div className="flex-1 flex gap-5 min-h-0">
+        <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:gap-5 min-h-0 min-w-0">
           
           {/* LEFT: Email List OR Search Results */}
-          <div className="w-[420px] flex flex-col h-full shrink-0 border border-zinc-800/50 rounded-2xl bg-[#0F131D] overflow-hidden">
+          <div className={`w-full lg:w-[420px] lg:shrink-0 flex flex-col h-full border border-zinc-800/50 rounded-2xl bg-[#0F131D] overflow-hidden ${selectedEmail ? 'hidden lg:flex' : 'flex'}`}>
              {activeTab === 'search' ? (
                 <div className="flex flex-col h-full">
                   <div className="px-5 py-4 border-b border-zinc-800/50 flex justify-between items-center bg-[#0a0a0f]">
@@ -2771,11 +2771,18 @@ export default function App() {
           </div>
 
           {/* RIGHT: Email Details / Analytics */}
-          <div className="flex-1 flex flex-col min-w-0 border border-zinc-800/50 rounded-2xl bg-[#0F131D] overflow-hidden relative shadow-lg">
+          <div className={`flex-1 flex flex-col min-w-0 border border-zinc-800/50 rounded-2xl bg-[#0F131D] overflow-hidden relative shadow-lg ${selectedEmail ? 'flex' : 'hidden lg:flex'}`}>
             {selectedEmail ? (
               <div className="absolute inset-0 overflow-y-auto">
                 {/* Detail Header */}
-                <div className="px-8 py-6 border-b border-zinc-800/50">
+                <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-zinc-800/50">
+                  {/* Mobile Back Button */}
+                  <button 
+                    onClick={() => setSelectedEmail(null)}
+                    className="lg:hidden flex items-center gap-1.5 text-xs font-bold text-cyan-400 hover:text-cyan-300 mb-3 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 w-fit cursor-pointer transition-colors"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Inbox
+                  </button>
                   <div className="flex items-start gap-4">
                     <div className={`w-12 h-12 rounded-full ${getInitialColor(selectedEmail.sender)} flex items-center justify-center text-lg font-bold text-white shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.1)] border border-zinc-700`}>
                           {getInitials(selectedEmail.sender)}

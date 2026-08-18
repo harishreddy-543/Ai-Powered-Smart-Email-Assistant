@@ -834,8 +834,8 @@ export default function VoiceAssistant({ onCommand }) {
 
       {/* Voice Assistant Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[60] flex items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) { stopListening(); setIsOpen(false); }}}>
-          <div className="bg-[#0a0e17] w-full max-w-lg rounded-3xl shadow-[0_0_80px_rgba(59,130,246,0.15)] border border-blue-500/20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[60] flex items-center justify-center p-3 sm:p-4 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) { stopListening(); setIsOpen(false); }}}>
+          <div className="bg-[#0a0e17] w-full max-w-lg max-h-[92vh] my-auto rounded-2xl sm:rounded-3xl shadow-[0_0_80px_rgba(59,130,246,0.15)] border border-blue-500/20 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-zinc-800/50">
