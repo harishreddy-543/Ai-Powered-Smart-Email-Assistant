@@ -5,6 +5,9 @@ serviceAccountkey*.json
 test.json
 test_latest.json
 
+# Ignore nested submodules
+/Ai powered Email Assistant/
+
 # Databases
 *.db
 
