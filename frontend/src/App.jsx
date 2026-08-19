@@ -19,7 +19,7 @@ import LandingPage from './components/LandingPage';
 import AuthScreen from './components/AuthScreen';
 import { requestFirebaseNotificationPermission, onMessageListener } from './firebase';
 
-const API_BASE = `http://${window.location.hostname}:8000/api/v1`;
+const API_BASE = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000/api/v1`;
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#22c55e', '#f59e0b', '#ec4899', '#06b6d4'];
 const SECURITY_COLORS = ['#22c55e', '#f59e0b', '#ef4444'];
@@ -238,7 +238,7 @@ export default function App() {
     formData.append('subject', data.subject);
     formData.append('body', data.body);
     if (data.files) data.files.forEach(f => formData.append('files', f));
-    fetch(`http://${window.location.hostname}:8000/api/v1/compose/send`, {
+    fetch(`${API_BASE}/compose/send`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       body: formData

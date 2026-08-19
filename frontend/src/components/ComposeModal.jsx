@@ -102,7 +102,8 @@ export default function ComposeModal({ isOpen, onClose, onSendWithUndo, initialD
     formData.append('body', data.body);
     if (data.files) data.files.forEach(f => formData.append('files', f));
 
-    fetch(`http://${window.location.hostname}:8000/api/v1/compose/send`, {
+    const API_BASE = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000/api/v1`;
+    fetch(`${API_BASE}/compose/send`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       body: formData
@@ -110,12 +111,13 @@ export default function ComposeModal({ isOpen, onClose, onSendWithUndo, initialD
   };
 
   const handleSaveDraft = () => {
+    const API_BASE = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000/api/v1`;
     const formData = new FormData();
     formData.append('to', to);
     formData.append('subject', subject);
     formData.append('body', body);
 
-    fetch(`http://${window.location.hostname}:8000/api/v1/compose/draft`, {
+    fetch(`${API_BASE}/compose/draft`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       body: formData
@@ -127,6 +129,7 @@ export default function ComposeModal({ isOpen, onClose, onSendWithUndo, initialD
 
   const handleScheduleSend = (scheduledAt) => {
     if (!to) return;
+    const API_BASE = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000/api/v1`;
     const formData = new FormData();
     formData.append('to', to);
     if (cc) formData.append('cc', cc);
@@ -135,7 +138,7 @@ export default function ComposeModal({ isOpen, onClose, onSendWithUndo, initialD
     formData.append('body', body);
     formData.append('scheduled_at', scheduledAt.toISOString());
 
-    fetch(`http://${window.location.hostname}:8000/api/v1/schedule/`, {
+    fetch(`${API_BASE}/schedule/`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       body: formData
