@@ -102,7 +102,7 @@ export default function ComposeModal({ isOpen, onClose, onSendWithUndo, initialD
     formData.append('body', data.body);
     if (data.files) data.files.forEach(f => formData.append('files', f));
 
-    const API_BASE = import.meta.env.VITE_API_BASE || 'https://ai-email-assistant-backend-v7yk.onrender.com/api/v1';
+    const API_BASE = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000/api/v1`;
     fetch(`${API_BASE}/compose/send`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
@@ -111,7 +111,7 @@ export default function ComposeModal({ isOpen, onClose, onSendWithUndo, initialD
   };
 
   const handleSaveDraft = () => {
-    const API_BASE = import.meta.env.VITE_API_BASE || 'https://ai-email-assistant-backend-v7yk.onrender.com/api/v1';
+    const API_BASE = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000/api/v1`;
     const formData = new FormData();
     formData.append('to', to);
     formData.append('subject', subject);
@@ -129,7 +129,7 @@ export default function ComposeModal({ isOpen, onClose, onSendWithUndo, initialD
 
   const handleScheduleSend = (scheduledAt) => {
     if (!to) return;
-    const API_BASE = import.meta.env.VITE_API_BASE || 'https://ai-email-assistant-backend-v7yk.onrender.com/api/v1';
+    const API_BASE = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000/api/v1`;
     const formData = new FormData();
     formData.append('to', to);
     if (cc) formData.append('cc', cc);
